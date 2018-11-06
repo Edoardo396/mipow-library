@@ -1,4 +1,5 @@
 import bluepy.btle as bp
+import bluepy
 from enum import Enum
 
 class Color:
@@ -51,10 +52,25 @@ class MipowDevice:
 
         effect_code = effect.value - 1
         speed = 255 - round(speed * (255/100))
-        self.device.writeCharacteristic(self.SET_EFFECT_HANDLE, bytes([color.white, color.red, color.green, color.blue, effect_code, 0, speed, 0]))
+        self.device.writeCharacteristic(self.SET_EFFECT_HANDLE, bytes([color.white, color.red, color.green,
+                                                                       color.blue, effect_code, 0, speed, 0]))
+
+    def disconnect(self):
+        self.device.disconnect()
 
     def reconnect(self):
+        self.disconnect()
         self.device.connect(self.device_address)
+
+    @staticmethod
+    def scan_devices():
+        scanner = bp.Scanner()
+        devices = scanner.scan(10.0)
+
+        for dev in devices:
+            print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
+            for (adtype, desc, value) in dev.getScanData():
+                print("  %s = %s" % (desc, value))
 
     @staticmethod
     def color_if_none(color: Color):

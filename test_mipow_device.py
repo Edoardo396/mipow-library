@@ -3,7 +3,7 @@ import mipow_device as mipow
 import time
 
 
-dev = mipow.MipowDevice("12:5E:4B:11:AC:E6")
+dev = None #mipow.MipowDevice("12:5E:4B:11:AC:E6")
 
 
 class MyTestCase(unittest.TestCase):
@@ -16,6 +16,10 @@ class MyTestCase(unittest.TestCase):
         dev.set_effect(mipow.Effect.PULSE, 100, mipow.Color(0, 255, 0, 0))
         time.sleep(3)
         dev.set_effect(mipow.Effect.RAINBOW_FADE, 100)
+
+## MUST RUN AS SUDO!
+    def test_scan(self):
+        mipow.MipowDevice.scan_devices()
 
 
 if __name__ == '__main__':
