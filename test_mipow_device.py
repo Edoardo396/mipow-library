@@ -3,16 +3,19 @@ import mipow_device as mipow
 import time
 
 
-dev = mipow.mipow_device("12:5E:4B:11:AC:E6")
+dev = mipow.MipowDevice("12:5E:4B:11:AC:E6")
 
 
 class MyTestCase(unittest.TestCase):
 
     def test_colors(self):
-        dev.set_color(0x40, 0xb5, 0x66, 0xfa)
+        dev.set_color(mipow.Color(0, 255, 128, 23))
         time.sleep(3)
 
-
+    def test_effect_pulse(self):
+        dev.set_effect(mipow.Effect.PULSE, 100, mipow.Color(0, 255, 0, 0))
+        time.sleep(3)
+        dev.set_effect(mipow.Effect.RAINBOW_FADE, 100)
 
 
 if __name__ == '__main__':
