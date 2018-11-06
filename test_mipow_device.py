@@ -3,7 +3,7 @@ import mipow_device as mipow
 import time
 
 
-dev = None #mipow.MipowDevice("12:5E:4B:11:AC:E6")
+dev = mipow.MipowDevice("12:5E:4B:11:AC:E6")
 
 
 class MyTestCase(unittest.TestCase):
