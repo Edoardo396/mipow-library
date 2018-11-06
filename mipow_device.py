@@ -2,7 +2,7 @@ import bluepy
 import bluepy.btle as bp
 
 
-class MipowDevice:
+class mipow_device:
 
     device_address = ""
     device = None
