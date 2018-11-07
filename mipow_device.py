@@ -1,14 +1,16 @@
 import bluepy.btle as bp
 import bluepy
 from enum import Enum
+import struct
+
 
 class Color:
-    white = 0
     red = 0
     green = 0
     blue = 0
+    white = 0
 
-    def __init__(self, white, red, blue, green):
+    def __init__(self, red, green, blue, white):
         self.white = white
         self.red = red
         self.blue = blue
@@ -23,37 +25,78 @@ class Effect(Enum):
     RAINBOW_FADE = 4
 
 
+COLOR_CHARACTERISTIC_UUID = bp.UUID("0000fffc-0000-1000-8000-00805f9b34fb")
+EFFECT_CHARACTERISTIC_UUID = bp.UUID("0000fffb-0000-1000-8000-00805f9b34fb")
+
+
 class MipowDevice:
 
-    SET_COLOR_HANDLE = 0x001b
-    SET_EFFECT_HANDLE = 0x0019
-
-    device_address = ""
-    device = None
-
     def __init__(self, address):
+        self._color = None  # type: Color
+        self._effect = None
+        self._effect_speed = 0
         self.device_address = address
         self.device = bp.Peripheral(address)
+        characteristics = self.device.getCharacteristics(0x0001)
+        self.color_characteristic = next(filter(lambda el: el.uuid == COLOR_CHARACTERISTIC_UUID, characteristics))
+        self.effect_characteristic = next(filter(lambda el: el.uuid == EFFECT_CHARACTERISTIC_UUID, characteristics))
+        self.update_local()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.device.disconnect()
 
-    def set_color(self, color: Color):
-        value = bytes([color.white, color.red, color.green, color.blue])
-        print(value)
-        self.device.writeCharacteristic(self.SET_COLOR_HANDLE, value, False)
+    @property
+    def color(self):
+        self.update_local()
+        return self._color
 
-    def set_effect(self, effect: Effect, speed, color: Color = None):
-        color = MipowDevice.color_if_none(color)
+    @color.setter
+    def color(self, color: Color):
+        self._color = color
 
-        if effect == Effect.STATIC:
-            self.set_color(color)
+    @property
+    def effect(self):
+        self.update_local()
+        return self._effect
+
+    @effect.setter
+    def effect(self, value: Effect):
+        self._effect = value
+
+    @property
+    def effect_speed(self):
+        self.update_local()
+        return self._effect_speed
+
+    @effect_speed.setter
+    def effect_speed(self, value):
+        self._effect_speed = value
+
+    def update_local(self):
+        color_value = self.color_characteristic.read()
+        effect_value = self.effect_characteristic.read()
+        self._effect_speed = effect_value[6] * (100/255)
+
+        # solid color set
+        if effect_value[4] == 255:
+            self._color = Color(color_value[0], color_value[1], color_value[2], color_value[3])
+            self._effect = Effect.STATIC
             return
 
-        effect_code = effect.value - 1
-        speed = 255 - round(speed * (255/100))
-        self.device.writeCharacteristic(self.SET_EFFECT_HANDLE, bytes([color.white, color.red, color.green,
-                                                                       color.blue, effect_code, 0, speed, 0]))
+        # effect set
+        if effect_value[4] != 255:
+            self._color = Color(effect_value[0], effect_value[1], effect_value[2], effect_value[3])
+            self._effect = Effect(effect_value[4] + 1)
+
+    def update_remote(self):
+        if self._effect == Effect.STATIC:
+            self.color_characteristic.write(bytes([self._color.white, self._color.red, self._color.green, self._color.blue]))
+        else:
+            speed = 255 - round(self._effect_speed * (255 / 100))
+            array = [self._color.white, self._color.red, self._color.green, self._color.blue,
+                     self._effect.value - 1, 0, speed, 0]
+            print(array)
+            self.effect_characteristic.write(bytes(array))
 
     def disconnect(self):
         self.device.disconnect()
@@ -78,17 +121,3 @@ class MipowDevice:
             return Color(0, 0, 0, 0)
         else:
             return color
-
-
-
-
-
-
-
-
-
-
-
-
-
-
