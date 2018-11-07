@@ -78,6 +78,11 @@ class MipowDevice:
     def turn_on(self):
         self.update_remote()
 
+    @property
+    def is_on(self):
+        colorvalue = self.color_characteristic.read()
+        return colorvalue == b'\x00\x00\x00\x00'
+
     def update_local(self):
         color_value = self.color_characteristic.read()
         effect_value = self.effect_characteristic.read()
@@ -96,6 +101,7 @@ class MipowDevice:
             self._effect = Effect(effect_value[4] + 1)
 
     def update_remote(self):
+        self._color = MipowDevice.color_if_none(self._color)
         if self._effect == Effect.STATIC:
             self.color_characteristic.write(
                 bytes([self._color.white, self._color.red, self._color.green, self._color.blue]))
@@ -126,6 +132,6 @@ class MipowDevice:
     @staticmethod
     def color_if_none(color: Color):
         if color is None:
-            return Color(0, 0, 0, 0)
+            return Color(0, 0, 0, 255)
         else:
             return color

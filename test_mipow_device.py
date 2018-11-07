@@ -48,7 +48,15 @@ class MyTestCase(unittest.TestCase):
         time.sleep(5)
         dev.turn_on()
 
+    def test_off(self):
+        dev.turn_off()
 
+    def test_ison(self):
+        dev.effect = mipow.Effect.STATIC
+        dev.effect_speed = 100
+        dev.update_remote()
+        time.sleep(1)
+        print(dev.is_on)
 
 """ MUST RUN AS SUDO!
     def test_scan(self):
