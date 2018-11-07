@@ -8,7 +8,7 @@ dev = mipow.MipowDevice("12:5E:4B:11:AC:E6")
 class MyTestCase(unittest.TestCase):
 
     def test_colors(self):
-        dev.effect = mipow.Effect.STATIC
+        dev.effect = mipow.Effect.SOLID
         dev.color = mipow.Color(0, 0, 0, 0)
         time.sleep(2)
         dev.color = mipow.Color(255, 0, 0, 0)
@@ -52,7 +52,7 @@ class MyTestCase(unittest.TestCase):
         dev.turn_off()
 
     def test_ison(self):
-        dev.effect = mipow.Effect.STATIC
+        dev.effect = mipow.Effect.SOLID
         dev.effect_speed = 100
         dev.update_remote()
         time.sleep(1)

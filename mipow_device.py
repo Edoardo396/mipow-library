@@ -18,7 +18,7 @@ class Color:
 
 
 class Effect(Enum):
-    STATIC = 0
+    SOLID = 0
     FLASH = 1
     PULSE = 2
     RAINBOW = 3
@@ -92,7 +92,7 @@ class MipowDevice:
         if effect_value[4] == 255:
             if effect_value[4] == 0 or effect_value[1] == 1:
                 self._color = Color(color_value[0], color_value[1], color_value[2], color_value[3])
-            self._effect = Effect.STATIC
+            self._effect = Effect.SOLID
             return
 
         # effect set
@@ -102,7 +102,7 @@ class MipowDevice:
 
     def update_remote(self):
         self._color = MipowDevice.color_if_none(self._color)
-        if self._effect == Effect.STATIC:
+        if self._effect == Effect.SOLID:
             self.color_characteristic.write(
                 bytes([self._color.white, self._color.red, self._color.green, self._color.blue]))
         else:
