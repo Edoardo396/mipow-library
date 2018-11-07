@@ -72,14 +72,21 @@ class MipowDevice:
     def effect_speed(self, value):
         self._effect_speed = value
 
+    def turn_off(self):
+        self.color_characteristic.write(bytes([0, 0, 0, 0]))
+
+    def turn_on(self):
+        self.update_remote()
+
     def update_local(self):
         color_value = self.color_characteristic.read()
         effect_value = self.effect_characteristic.read()
-        self._effect_speed = effect_value[6] * (100/255)
+        self._effect_speed = effect_value[6] * (100 / 255)
 
         # solid color set
         if effect_value[4] == 255:
-            self._color = Color(color_value[0], color_value[1], color_value[2], color_value[3])
+            if effect_value[4] == 0 or effect_value[1] == 1:
+                self._color = Color(color_value[0], color_value[1], color_value[2], color_value[3])
             self._effect = Effect.STATIC
             return
 
@@ -90,7 +97,8 @@ class MipowDevice:
 
     def update_remote(self):
         if self._effect == Effect.STATIC:
-            self.color_characteristic.write(bytes([self._color.white, self._color.red, self._color.green, self._color.blue]))
+            self.color_characteristic.write(
+                bytes([self._color.white, self._color.red, self._color.green, self._color.blue]))
         else:
             speed = 255 - round(self._effect_speed * (255 / 100))
             array = [self._color.white, self._color.red, self._color.green, self._color.blue,

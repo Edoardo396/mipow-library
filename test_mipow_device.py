@@ -38,6 +38,17 @@ class MyTestCase(unittest.TestCase):
     def test_update(self):
         dev.update_local()
 
+    def test_off_on(self):
+        dev.effect = mipow.Effect.PULSE
+        dev.color = mipow.Color(255,0,128,0)
+        dev.effect_speed = 100
+        dev.update_remote()
+        time.sleep(2)
+        dev.turn_off()
+        time.sleep(5)
+        dev.turn_on()
+
+
 
 """ MUST RUN AS SUDO!
     def test_scan(self):
